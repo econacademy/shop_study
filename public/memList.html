@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>shop member list</title>
+</head>
+<script>
+window.addEventListener("DOMContentLoaded",()=>{
+    //id지정된 것들 
+    const loadMemListBtn=document.getElementById("loadMemListBtn");
+    const memListTbody=document.getElementById("memList");
+    const idMsg=document.getElementById("idMsg");
+   
+    
+    const memForm=document.forms.memForm;  //create 양식
+    const memUpdateForm=document.forms.memUpdateForm;  //update 양식
+
+    //form data를 post로 전달할 객체
+    const FormData=function(id,name,phone,year){
+        this.id=id;
+        this.name=name;
+        this.phone=phone;
+        this.year=year;
+    } 
+    //아이디 입력 후 중복체크
+    memForm.id.addEventListener("blur",(e)=>{
+        let id=e.target.value;
+        memReadDetail(id)
+        .then((res)=>{return res.json()})
+        .then((memList)=>{
+            let length =memList.length;
+            if(length==0){
+                idMsg.innerHTML=("사용가능한 아이디");
+                idMsg.style.color="green";
+                insertCheck=true;
+            }else{
+                idMsg.innerHTML=("사용할 수 없는 아이디");
+                idMsg.style.color="red";
+                e.target.value="";
+                insertCheck=false;
+            }
+        })
+    });
+    //회원 등록 버튼 누를 시
+    let insertCheck=false; //true 일 때만 insert 가능
+    memForm.addEventListener("submit",(e)=>{
+        e.preventDefault();
+        if(insertCheck){
+            const formData=new FormData(memForm.id.value,memForm.name.value,memForm.phone.value,memForm.birth.value,)
+            memCreate(formData)
+            .then((res)=>{return res.json()})
+            .then((result)=>{
+                console.log(result);
+                let msg="";
+                if(result["result"]===1){
+                    memReadCont(); //리스트 다시 호출
+                    memForm.reset(); //폼 초기화
+                    location.href="#memList"; //리스트로 이동
+                    msg="회원 등록 성공, 리스트를 다시 출력합니다.";
+                }else{
+                    msg=("등록 실패:"+result["msg"]);
+                }
+                alert(msg);
+            });
+        }else{
+            alert("아이디나 전화번호 중복 체크를 하세요");
+        }
+    });
+    //리스트 출력 버튼 누를 시 컨트롤러 호출
+    loadMemListBtn.addEventListener("click",memReadCont);
+    //리스트 출력시 복제해서 사용할 예시
+    const memClone=document.querySelector("#memList>.memClone"); 
+    //리스트 출력 컨트롤러
+    function memReadCont(){
+        memRead()
+        .then((res)=>{return res.json()})
+        .then((memList)=>{
+            memListTbody.innerHTML="";
+            memList.forEach((mem)=>{
+                const memNode=memClone.cloneNode(true);
+                memNode.style.display="";
+                let key;
+                for(key in mem){
+                    let value=mem[key];
+                    switch(key){
+                        case "ID": 
+                            memNode.querySelector(".id").innerText=value;
+                            memNode.querySelector(".update").addEventListener("click",()=>{memUpdateCont(value)})
+                            memNode.querySelector(".delete").addEventListener("click",()=>{memDeleteCont(value)})
+                        break;
+                        case "NAME":
+                        memNode.querySelector(".name").innerText=value;
+                        break;
+                        case "PHONE":
+                        memNode.querySelector(".phone").innerText=value;
+                        break;
+                        case "BIRTH":
+                        memNode.querySelector(".birth").innerText=value;
+                        break;
+                    }
+                }
+                memListTbody.append(memNode);
+            })
+        });
+    }
+
+    function memDeleteCont(id){//리스트에서 수정 버튼 누르면 수정폼에 내용 채우는 함수
+       //delete -1:에러, 0:먼저삭제, 1:삭제성공(id 유니크)
+        memDelete(id)
+        .then((res)=>{return res.json()}) 
+        .then((result)=>{
+            let msg="";
+            if(result["result"]>0){
+                memReadCont(); //리스트 다시 호출
+                msg=result["result"]+"개 삭제되었습니다. 리스트를 다시 출력합니다."
+            }else if(result["result"]===0){
+                msg="이미 삭제된 레코드 입니다."
+            }else{
+                msg="참조하는 레코드가 있거나 오류가 발생했습니다."+result["msg"];
+            }
+            alert(msg);
+        })
+    } 
+    function memUpdateCont(id){//리스트에서 수정 버튼 누르면 수정폼에 내용 채우는 함수
+        memReadDetail(id)
+        .then((res)=>{return res.json()})
+        .then((memList)=>{
+            if(memList.length>0){
+                const mem=memList[0];
+                memUpdateForm.id.value=mem.ID;
+                memUpdateForm.name.value=mem.NAME;
+                memUpdateForm.phone.value=mem.PHONE;
+                memUpdateForm.birth.value=mem.BIRTH;
+            }
+        });
+    } 
+    memUpdateForm.addEventListener("submit",(e)=>{
+        e.preventDefault();
+        const formdata=new FormData(
+            memUpdateForm.id.value,
+            memUpdateForm.name.value,
+            memUpdateForm.phone.value,
+            memUpdateForm.birth.value);
+        memUpdate(formdata)
+        .then((res)=>{return res.json()})
+        .then((result)=>{
+            //-1:에러, 0:삭제된 레코드입니다, 1:수정성공
+            let msg="";
+            if(result["result"]>0){
+                memReadCont(); //리스트 다시 호출
+                msg=result["result"]+"개 수정되었습니다. 리스트를 다시 출력합니다."
+            }else if(result["result"]===0){
+                msg="이미 삭제된 레코드 입니다."
+            }else{
+                msg="참조하는 레코드가 있거나 오류가 발생했습니다."+result["msg"];
+            }
+            alert(msg);
+        });
+    })
+    function memRead(){
+        return fetch("/member/ajax/read.do");
+    }
+    function memReadDetail(id){
+        return fetch("/member/ajax/readDetail.do?id="+id);
+    }
+    function memUpdate(formData){
+        console.log(formData);
+        return fetch("/member/ajax/update.do",{
+            method: "post",
+            headers: {"Content-type":"application/json"},
+            body: JSON.stringify(formData)
+        })
+    }
+    function memCreate(formData){
+        //get url?파라미터
+        //post 본문(페이로드)에 파라미터 포함
+        return fetch("/member/ajax/create.do",{
+            method: "post",
+            headers: { 'Content-type':'application/json'},
+            body: JSON.stringify(formData)
+        })
+    }
+    function memDelete(id){
+        return fetch("/member/ajax/delete.do?id="+id)
+    }
+}); //dom이 로드된 시점
+///새롭게 만들어지 node 개체는 onload 시 만들어진 함수를 찾지 못한다.
+
+
+
+
+
+</script>
+<body>
+    <header>
+        <h1>
+            shop 관리 웹 앱</h1>
+        <nav>
+            <ul>
+                <li>
+                    <a href="/member/list.do">회원 관리</a></li>
+                <li>상품 관리</li>
+                <li>게시판 관리</li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <h2>회원 등록</h2>
+        <form name="memForm">
+            <p>
+                <label for="">아이디<input name="id" type="text" value="ZZZ"></label>
+                <br><strong id="idMsg">blur로 중복체크중</strong>
+            </p>
+            <p><label for="">이름<input name="name" type="text" value="민수"></label></p>
+            <p><label for="">전화번호<input name="phone" value="010-3333-3333"></label></p>
+            <p><label for="">태어난해<input name="birth" type="number" value="2000" min="1900" max="2022"></label></p>
+            <P><button name="submitBtn">입력</button></P>
+        </form>
+        <hr>
+        <h2>회원 관리</h2>
+        <h3>회원 리스트 <button id="loadMemListBtn">출력</button></h3>
+        <table>
+            <thead>
+                <tr><td>아이디</td><td>이름</td><td>폰</td><td>태어난해</td>
+                    <td>수정</td><td>삭제</td>
+                </tr>
+            </thead>
+            <tbody id="memList">
+                <tr class="memClone" style="display:none;">
+                    <td class="id">AAA</td>
+                    <td class="name">길동</td>
+                    <td class="phone">010-1234-1234</td>
+                    <td class="birth">1986</td>
+                    <td><button class="update">수정</button></td>
+                    <td><button class="delete">삭제</button></td>
+                </tr>
+            </tbody>
+        </table>
+        <hr>
+        <h2>회원 수정</h2>
+        <form name="memUpdateForm" id="memUpdateForm">
+            <p>
+                <label for="">아이디<input name="id" type="text" value="" disabled></label>
+            </p>
+            <p><label for="">이름<input name="name" type="text" value=""></label></p>
+            <p><label for="">전화번호<input name="phone" value=""></label></p>
+            <p><label for="">태어난해<input name="birth" type="number" value="" min="1900" max="2022"></label></p>
+            <P><button name="submitBtn">입력</button></P>
+        </form>
+
+    </main>
+</body>
+</html>
