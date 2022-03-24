@@ -1,2 +1,2 @@
 # shop_study
-shop study  중입니다
+shop study  중입니다 최아리
