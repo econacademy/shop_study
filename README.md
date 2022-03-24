@@ -2,4 +2,4 @@
 shop study  중입니다
 
 
-Choi Sung Jun.
+양제연 수정 확인용.
