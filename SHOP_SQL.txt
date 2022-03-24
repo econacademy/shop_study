@@ -1,0 +1,130 @@
+DROP DATABASE SHOP;
+CREATE DATABASE SHOP;
+use SHOP;
+create table member(
+ID varchar(255) NOT NULL,
+NAME varchar(255) NOT NULL,
+PHONE varchar(255) NOT NULL,
+BIRTH INT default 1970,
+CONSTRAINT ID_PK PRIMARY KEY(ID),
+CONSTRAINT PHONE_UC UNIQUE(PHONE)
+);
+INSERT INTO MEMBER 
+(ID,NAME,PHONE)
+VALUES
+('AAA','길동',666)
+,('BBB','길동',777)
+,('CCC','길동',888);
+CREATE TABLE BOARD(
+	NUM INT NOT NULL AUTO_INCREMENT,
+	MEMBER_ID VARCHAR(255) NOT NULL,
+	TITLE VARCHAR(255) NOT NULL,
+	CONTENTS VARCHAR(255) DEFAULT '',
+	REGIST_TIME DATETIME DEFAULT CURRENT_TIMESTAMP(),
+	PRIMARY KEY(NUM),
+	FOREIGN KEY(MEMBER_ID) REFERENCES MEMBER(ID) 
+		ON UPDATE CASCADE
+		ON DELETE RESTRICT
+) ;
+INSERT INTO BOARD
+(MEMBER_ID,TITLE,CONTENTS)
+VALUES 
+( 'BBB','2번번째글이다 와~!','반갑습니다. 여러분~~!!')
+,( 'BBB','3번번째글이다 와~!','반갑습니다. 여러분~~!!')
+ ,( 'BBB','4번번째글이다 와~!','반갑습니다. 여러분~~!!')
+ ,( 'BBB','5번번째글이다 와~!','반갑습니다. 여러분~~!!')
+ ,( 'BBB','6번번째글이다 와~!','반갑습니다. 여러분~~!!')
+ ,( 'BBB','7번번째글이다 와~!','반갑습니다. 여러분~~!!')
+ ,( 'BBB','8번번째글이다 와~!','반갑습니다. 여러분~~!!')
+ ,( 'BBB','9번번째글이다 와~!','반갑습니다. 여러분~~!!')
+ ,( 'BBB','10번번째글이다 와~!','반갑습니다. 여러분~~!!')
+ ,( 'BBB','11번번째글이다 와~!','반갑습니다. 여러분~~!!')
+ ,( 'BBB','12번번째글이다 와~!','반갑습니다. 여러분~~!!')
+ ,( 'BBB','13번번째글이다 와~!','반갑습니다. 여러분~~!!')
+ ,( 'BBB','14번번째글이다 와~!','반갑습니다. 여러분~~!!')
+ ,( 'BBB','15번번째글이다 와~!','반갑습니다. 여러분~~!!')
+ ,( 'BBB','16번번째글이다 와~!','반갑습니다. 여러분~~!!');
+
+
+
+CREATE TABLE CATEGORY(
+CATEGORY_NUM INT NOT NULL AUTO_INCREMENT, 
+NAME VARCHAR(255) NOT NULL,
+SUB INT,
+PRIMARY KEY(CATEGORY_NUM),
+FOREIGN KEY(SUB ) REFERENCES CATEGORY(CATEGORY_NUM )
+);
+INSERT INTO CATEGORY( NAME, SUB )
+VALUES('가전',NULL),
+('컴퓨터',NULL),
+('아웃도어',NULL),
+('패션',NULL),
+('주방',NULL),
+('TV',1),
+('세탁기',1),
+('냉장고',1),
+('청소기',1),
+('오븐',1),
+('올레드',6),
+('미니LED',6),
+('QLED',6),
+('여성의류',4),
+('남성의류',4),
+('가방',4),
+('신발',4),
+('운동화',4),
+('스니커즈',17),
+('남성구두',17),
+('여성구두',17);
+
+SELECT C.NAME 메인, S.NAME 서브, D.NAME 디테일
+FROM CATEGORY C INNER JOIN CATEGORY S 
+ON C.CATEGORY_NUM=S.SUB
+INNER JOIN CATEGORY D 
+ON S.CATEGORY_NUM=D.SUB;
+
+
+CREATE TABLE PRODUCT(
+PRODUCT_NUM INT NOT NULL AUTO_INCREMENT, 
+NAME VARCHAR(255) NOT NULL,
+TITLE VARCHAR(255) NOT NULL,
+COUNT INT NOT NULL,
+PRICE INT NOT NULL,
+COLOR VARCHAR(10),
+MAIN_IMG VARCHAR(255) NOT NULL,
+DETAIL_IMG VARCHAR(255),
+MODEL_NUM VARCHAR(255),
+MEMBER_ID VARCHAR(255) NOT NULL,
+CATEGORY_NUM INT NOT NULL,
+PRIMARY KEY(PRODUCT_NUM),
+FOREIGN KEY(MEMBER_ID) REFERENCES MEMBER(ID), 
+FOREIGN KEY(CATEGORY_NUM) REFERENCES CATEGORY(CATEGORY_NUM)
+);
+INSERT INTO PRODUCT 
+(NAME,TITLE,COUNT,PRICE,COLOR,MAIN_IMG,DETAIL_IMG,MODEL_NUM,MEMBER_ID,CATEGORY_NUM )
+VALUES
+('컨버스','컨버스 척 70 클래식',100,58800,'블랙','162058C.jpg','162058C_detail.jpg','162058C','BBB',19)
+,('컨버스','컨버스 척 70 클래식' ,100,58800,'화이트','162058C.jpg','162058C_detail.jpg','162058C','BBB',19)
+,('컨버스','컨버스 척 70 클래식',100,58800,'블랙','162058C.jpg','162058C_detail.jpg','162058C','BBB',19)
+,('컨버스','컨버스 척 70 클래식' ,100,58800,'화이트','162058C.jpg','162058C_detail.jpg','162058C','BBB',19)
+,('컨버스','컨버스 척 70 클래식',100,58800,'블랙','162058C.jpg','162058C_detail.jpg','162058C','BBB',19)
+,('컨버스','컨버스 척 70 클래식' ,100,58800,'화이트','162058C.jpg','162058C_detail.jpg','162058C','BBB',19)
+,('컨버스','컨버스 척 70 클래식',100,58800,'블랙','162058C.jpg','162058C_detail.jpg','162058C','BBB',19)
+,('컨버스','컨버스 척 70 클래식' ,100,58800,'화이트','162058C.jpg','162058C_detail.jpg','162058C','BBB',19)
+,('컨버스','컨버스 척 70 클래식',100,58800,'블랙','162058C.jpg','162058C_detail.jpg','162058C','BBB',19)
+,('컨버스','컨버스 척 70 클래식' ,100,58800,'화이트','162058C.jpg','162058C_detail.jpg','162058C','BBB',19)
+,('컨버스','컨버스 척 70 클래식',100,58800,'블랙','162058C.jpg','162058C_detail.jpg','162058C','BBB',19)
+,('컨버스','컨버스 척 70 클래식' ,100,58800,'화이트','162058C.jpg','162058C_detail.jpg','162058C','BBB',19)
+,('컨버스','컨버스 척 70 클래식',100,58800,'블랙','162058C.jpg','162058C_detail.jpg','162058C','BBB',19)
+,('컨버스','컨버스 척 70 클래식' ,100,58800,'화이트','162058C.jpg','162058C_detail.jpg','162058C','BBB',19)
+,('컨버스','컨버스 척 70 클래식',100,58800,'블랙','162058C.jpg','162058C_detail.jpg','162058C','BBB',19)
+,('컨버스','컨버스 척 70 클래식' ,100,58800,'화이트','162058C.jpg','162058C_detail.jpg','162058C','BBB',19)
+,('컨버스','컨버스 척 70 클래식',100,58800,'블랙','162058C.jpg','162058C_detail.jpg','162058C','BBB',19)
+,('컨버스','컨버스 척 70 클래식' ,100,58800,'화이트','162058C.jpg','162058C_detail.jpg','162058C','BBB',19)
+,('컨버스','컨버스 척 70 클래식',100,58800,'블랙','162058C.jpg','162058C_detail.jpg','162058C','BBB',19)
+,('컨버스','컨버스 척 70 클래식' ,100,58800,'화이트','162058C.jpg','162058C_detail.jpg','162058C','BBB',19)
+,('컨버스','컨버스 척 70 클래식',100,58800,'블랙','162058C.jpg','162058C_detail.jpg','162058C','BBB',19)
+,('컨버스','컨버스 척 70 클래식' ,100,58800,'화이트','162058C.jpg','162058C_detail.jpg','162058C','BBB',19)
+,('컨버스','컨버스 척 70 클래식' ,100,58800,'엘로우','162058C.jpg','162058C_detail.jpg','162058C','BBB',19);
+
+

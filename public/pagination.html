@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    
+<style>
+.pagination{
+    display: flex; 
+    list-style: none;
+    justify-content: center;
+}   
+.pagination>li{
+    width: 25px;
+    height: 25px;
+    line-height: 25px;
+    box-sizing: border-box;
+    text-align: center;
+}
+.pagination>li>a{
+    color: #000;
+    text-decoration: none;
+}
+.pagination>li.active{
+    background-color:darkgray;
+    color:#fff;
+}    
+</style>    
+</head>
+<nav>
+    <ul class="pagination" id="productPagination">
+    </ul>   
+</nav>
+<script>
+const productPagination=document.getElementById("productPagination");
+//라우팅에서 PAGE와 PAGE_LENGTH 추가    
+// const PAGE;
+// const PAGE_LENGTH;
+// const PRODUCT_COUNT;
+//총 페이지 수
+let parent_url=new URL(window.parent.location);
+let path=(window.parent.location.pathname);
+if(parent_url.search){
+    let i=0;
+    parent_url.searchParams.forEach((val,key)=>{
+        if(key!=="page"){
+            path+=((i===0)?"?":"&")+ key+"="+val
+            i++;
+        }
+    });
+    path+=(i===0)?"?":"&";
+}else{
+    path+="?";
+}
+//cateList?cate_num=19&page=5;
+//list?page=5;
+
+printPagination(PAGE,PAGE_LENGTH,PRODUCT_COUNT,productPagination);
+function printPagination(page,page_length,total_count,parent_node){
+    let total_page=(parseInt(total_count/page_length+((total_count%page_length>0)?1:0)));
+    console.log(total_page);
+    let start_page=page-2;
+    let end_page=page+2;
+    if(start_page<1){
+        end_page+=((start_page)*-1+1);
+        start_page=1;
+    }else if(end_page>total_page){
+        start_page-=(end_page-total_page);
+        end_page=total_page;
+    }
+    if(page !=1){
+        let li=document.createElement("li");
+        let a=document.createElement("a");
+        a.target="_top";
+        a.innerText="<<";
+        a.href=path+"page="+1;
+        li.append(a);
+        parent_node.append(li);
+    }
+    if((page-5)>0){
+        let li=document.createElement("li");
+        let a=document.createElement("a");
+        a.innerText="<";
+        a.target="_top";
+        a.href=path+"page="+(page-5);
+        li.append(a);
+        parent_node.append(li);
+    }
+    for(let i=start_page; i<=end_page; i++){
+        let li=document.createElement("li");
+        let a=document.createElement("a");
+        if(page===i){
+            li.classList.add("active");
+        }
+        a.innerText=i;
+        a.target="_top";
+        a.href=path+"page="+i;
+        li.append(a);
+        parent_node.append(li);
+    }
+    if((page+5)<=total_page){
+        let li=document.createElement("li");
+        let a=document.createElement("a");
+        a.innerText=">";
+        a.target="_top";
+        a.href=path+"page="+(page+5);
+        li.append(a);
+        parent_node.append(li);
+    }
+    if(page<total_page){
+        li=document.createElement("li");
+        a=document.createElement("a");
+        a.innerText=">>";
+        a.target="_top";
+        a.href=path+"page="+total_page;
+        li.append(a);
+        parent_node.append(li);
+    }
+}
+
+
+</script>
+
+</html>

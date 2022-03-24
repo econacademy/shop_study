@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/boxicons@2.1.1/dist/boxicons.js"></script>
+    <link href='https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css' rel='stylesheet'>
+
+    <title>상품상세+댓글리스트 ajax</title>
+<style>
+.productDetail{
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+}
+.infoContainer{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-wrap: wrap;
+    align-content: space-around;
+    padding: 0 20px;
+    background-color: rgb(31, 31, 54);
+    color: #fff;
+    font-size: 20px;
+}
+.infoContainer>p{
+    margin: 10px 0;
+}
+.infoContainer .cart{
+    color: #fff;
+    text-decoration: none;
+    border: 1px solid;
+    padding: 10px 15px;
+    border-radius: 1px;
+    background-color: rgba(0,0,0,0);
+}
+.infoContainer .cart:hover{
+    box-shadow: 0 0 2px #fff,
+                0 0 5px #fff,
+                0 0 10px #fff;
+}
+.imgContainer{
+    text-align: center;
+}
+@media (max-width:800px) {
+    .productDetail{
+        flex-direction: column;
+    }
+    .infoContainer{
+        padding: 20px 0;
+
+    }
+}
+#commentList{
+    font-size: 18px;
+    margin: 20px;
+    list-style: none;
+    padding: 0;
+}
+#commentList>li{
+    border-bottom: 1px solid gray;
+    width: 100%;
+    padding: 20px 10px;
+
+}
+.grade_container .grade{
+    vertical-align: baseline
+}
+.grade_container .grade{
+    font-size: 23px;
+    color: rgb(246, 209, 0);
+}
+.grade_container,
+.writer_container{ 
+    display: flex;
+}
+.grade_container>p,
+.writer_container>span{
+    flex-grow: 1;
+    margin: 0;
+}       
+
+.toggle_container{
+    height: 600px;
+    overflow: auto;
+}
+.toggle_nav{
+    display: flex;
+}    
+.toggle_nav .toggle_btn{
+    border: 1px solid rgb(31, 31, 54);
+    flex-basis: 200px;
+    text-align: center;
+    padding: 10 0px;
+    color: rgb(31, 31, 54);
+    text-decoration: none;
+    border-top-left-radius: 15px;
+
+}
+.toggle_nav .toggle_btn.active{
+    background-color: rgb(31, 31, 54);
+    color: #fff;
+}
+.toggle_container{
+    max-height: 0px;
+    transition: max-height 200ms;
+    
+}
+.toggle_container.active{
+    max-height: 600px;
+    border: 1px solid gray;
+}
+.img_container{
+    border-top: 1px solid lightgray;
+    display: flex;
+}
+.img_container>figure{
+    width: 80px;
+    margin: 2px 10px;
+
+} 
+.img_container>figure>img{
+    width: 100%;
+} 
+/* 알약 버튼 시작 */
+label.circle_btn{
+    display: inline-block;
+    width: 80px;
+    height: 40px;
+    border: 1px solid;
+    border-radius: 25px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    background-color: rgb(136, 158, 182);
+} 
+label.circle_btn>.circle{
+    display: inline-block;
+    width: 35px;
+    height: 35px;
+    margin: 2.5px;
+    border: 1px solid;
+    border-radius: 50%;
+    background-color: rgb(203, 213, 224);
+    transform: translateX(100%);
+    transition: transform 100ms;
+}
+label.circle_btn input{
+    position: absolute;
+    z-index: -1;
+}
+label.circle_btn input:checked~.circle{
+    /* justify-content: flex-end; */
+    transform: translateX(0%);
+}
+.visibale_container{
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    margin: 0;
+    border-left: 1px solid lightgray;
+}
+.invisiable{
+    opacity: 50%;
+    background-color: lightgray;
+}
+/* 알약 버튼 끝 */
+main{
+    display: flex;
+}
+main>aside
+{
+    flex-basis: 200px;
+}
+main>aside iframe{
+    width: 200px;
+    height: 85vh;
+    border: 1px solid;
+
+}
+header{
+    height: 15vh;
+}
+main>section{
+    border: 1px solid;
+}
+
+</style>
+</head>
+<body>
+    <header>
+        <h1>ajax로 상품상세와 댓글리스트를 동시에 불러오자 </h1>
+        <h2>상품 상세 페이지</h2>
+    </header>
+    <main>
+        <aside>
+            <iframe src="/item/menu.do" frameborder="0"></iframe>
+        </aside>
+        <section>
+            <div id="productDetail" class="productDetail">
+                <figure class="imgContainer">
+                    <img id="PRODUCT_MAIN_IMG" alt="상품 메인 이미지">
+                </figure>
+                <form class="infoContainer" name="itemUpdate">
+                    <p> 상품번호 :  <input type="text"name="PRODUCT_NUM"value="BBB" disabled ></p>
+        
+                    <p> 글쓴이 :  <input type="text"name="MEMBER_ID"value="BBB" disabled ></p>
+                    <p> 상품명 : <input type="text" name="NAME" value="NAME"> </p>
+                    <p> 제목 :  <input type="text" name="TITLE" value="TITLE"></p>
+                    <p> 판매수 :  <input type="text" name="COUNT" value="COUNT"></p>
+                    <p> 가격 :  <input type="text" name="PRICE" value="PRICE"></p>
+                    <p> 색 :  <input type="text" name="COLOR" value="COLOR"></p>
+                    <p> 모델넘버 :  <input type="text" name="MODEL_NUM" value="MODEL_NUM"></p>
+                    <p> 카테고리 :  
+                        <select  name="CATEGORY_NUM">
+                            <option value="CATEGORY_NUM">NAME</option>
+                        </select>
+                    <p>
+                        <button class="cart" type="reset">리셋하기</button>
+                        <button class="cart" type="submit">수정하기</button>
+                        <!-- 수정하면 =>디테일로 되돌아온다. or datail을 받아와서 출력 -->
+                        <button class="cart" name="delBtn" type="button">삭제하기</button>
+                        <!-- 삭제하면 => 디테일이 사라진다 =>리스트로 이동  -->
+                    </p>
+                </form>
+            </div>  
+            <nav class="toggle_nav">
+                <a href="#toggleDetail" class="toggle_btn"  data-toggle="#toggleDetail">상세이미지</a>
+                <a href="#toggleComment" class="toggle_btn"
+                data-toggle="#toggleComment" id="loadCommentList">상품평</a>
+            </nav>
+            <div id="toggleDetail" class="toggle_container">
+                <figure>
+                    <img id="PRODUCT_DETAIL_IMG" src="" alt="상품 상세 이미지">
+                </figure>
+            </div>
+            <!--댓글-->
+            <div id="toggleComment" class="toggle_container">
+                <ul id="commentList">
+                </ul>
+            </div>
+            <!-- 댓글 예시 -->
+            <ul>
+                <li id="list_ex">
+                    <div class="writer_container"> 
+                        <span>
+                            <strong class="MEMBER_NAME">홍길동</strong>
+                            <em class="MEMBER_ID">(user1)</em>
+                            <input type="hidden" class="PRODUCT_NUM" name="PRODUCT_NUM" value="">
+                        </span>
+                        <span class="REGIST_TIME ">
+                            2022.03.07
+                        </span>
+                        <span>
+                            판매자: <i class="PRODUCT_WRITER ">BBB</i> 
+                        </span>
+        
+                    </div>
+                    <div class="grade_container">
+                        <p>상품:<span class="PRODUCT_GRADE ">10</span></p>
+                        <p>배송:<span class="DELIVERY_GRADE ">6</span></p>
+                        <p>판매자:<span class="SELLER_GRADE ">5</span></p>
+                    </div>
+                    <div class="img_container">
+                        <figure style="flex-grow: 1;">
+                            <img class="IMG" src="" alt="댓글이미지">
+                        </figure>
+                        <div  style="flex-grow: 8;" class="content_container">
+                            <div class="TITLE">배송이 빨라요</div>
+                            <div class="CONTENT">엄청엄청 이뻐요</div>
+                        </div>                
+                        <form style="flex-grow: 1;" class="visibale_container">
+                            <label class="circle_btn">
+                                <input type="checkbox" class="VISIALBE">
+                                <span class="circle"></span>
+                            </label>
+                            <span>
+                                <input type="text" name="COMMENT_NUM" class="COMMENT_NUM" disabled size="2"> 숨기기
+                            </span>
+                        </form>
+                    </div>
+                </li>
+            </ul>
+        </section>
+    </main>
+<script> 
+
+
+const loadProduct=document.getElementById("loadProduct");
+const productDetail=document.getElementById("productDetail");
+const loadCommentList=document.getElementById("loadCommentList");
+const commentList=document.getElementById("commentList");
+const itemUpdate=document.forms.itemUpdate;
+const DELETE_URL="/item/delete.do";
+const UPDATE_URL="/item/update.do";
+const COMMENT_LIST_URL="/item/comment/list.do";
+
+console.log(PRODUCT);
+
+//토글 버튼 구현 .toggle_btn .toggle_container 만 있으면 가능
+const toggle_btns=document.querySelectorAll(".toggle_btn");
+const toggle_container=document.querySelectorAll(".toggle_container");
+toggle_btns.forEach((toggle_btn,i,arr)=>{
+    toggle_btn.addEventListener("click",function(){
+        arr.forEach((btn)=>{
+            btn.classList.remove("active");
+        });//버튼 전체 active 지우기
+        toggle_container.forEach((cont)=>{
+            cont.classList.remove("active");
+        })//버튼 컨테이너 active 지우기
+        toggle_btn.classList.add("active");
+        let target=toggle_btn.dataset.toggle;
+        document.querySelector(target).classList.add('active');
+    }); 
+})
+const list_ex=document.getElementById("list_ex"); 
+//코멘트 리스트에서 복제해서 사용할 노드
+loadCommentList.addEventListener("click",async (e)=>{
+    const list=await commentListAjax();
+    list.forEach((comment)=>{
+        const listNode=list_ex.cloneNode(true);
+        listNode.querySelector("IMG").src="/public/img/"+comment["IMG"];
+        VISIALBE_NODE=listNode.querySelector(".VISIALBE");
+        if(comment["VISIABLE"]){
+            VISIALBE_NODE.checked=true;
+            VISIALBE_NODE.value="1";
+        }else{
+            VISIALBE_NODE.checked=false;
+            VISIALBE_NODE.value="0";
+            listNode.classList.add("invisiable");
+        }
+        VISIALBE_NODE.addEventListener("click",async (e)=>{
+            //console.log(e.target.form.COMMENT_NUM.value); //입력요소에서 부모 form노드 찾기
+            e.preventDefault();
+            let comment_num_val=e.target.form.COMMENT_NUM.value;
+            const list=commentList.querySelector("#commentList"+comment_num_val);
+            let target_val=(e.target.value);
+            let COMMENT_VISIABLE_UPDATE_URL="/item/comment/visiableUpdate.do";
+            COMMENT_VISIABLE_UPDATE_URL+="?comment_num="+comment_num_val;
+            console.log(target_val);
+            if(target_val==="1"){
+                COMMENT_VISIABLE_UPDATE_URL+="&visiable=0";
+            }else{
+                COMMENT_VISIABLE_UPDATE_URL+="&visiable=1";
+            }
+            let res=await fetch(COMMENT_VISIABLE_UPDATE_URL);
+            let result=await res.json();
+            if(result.affectedRows>0){ //수정 성공
+                if(target_val==="1"){
+                    e.target.value="0";
+                    e.target.checked=false;
+                    circleBoxChangeColor(e.target);
+                    list.classList.add("invisiable");
+                }else{
+                    e.target.value="1";
+                    e.target.checked=true;
+                    circleBoxChangeColor(e.target);
+                    list.classList.remove("invisiable");
+                }
+            }
+        });
+        listNode.id="commentList"+comment["COMMENT_NUM"]; //코멘트 리스트에 아이디 추가
+
+        for(let key in comment){
+            let node=listNode.querySelector("."+key);
+            if(node){
+                node.innerText=comment[key];
+                node.value=comment[key];
+            
+            }
+        }
+        commentList.append(listNode);
+        circleBoxsChangeColor();
+    })
+})
+//삭제하는 버튼
+itemUpdate.delBtn.onclick= async()=>{
+    let product_num=itemUpdate.PRODUCT_NUM.value;
+    let result=await productDelAjax(product_num);
+    alert(result["msg"]);
+
+    if(result["affectedRows"]>=0){
+       window.location.href="/item/list.do";
+    }
+   console.log(result);
+}
+itemUpdate.onreset=(e)=>{
+    e.preventDefault();
+    productPrint();
+}
+//업데이트하는 버튼
+itemUpdate.onsubmit=async (e)=>{
+    e.preventDefault();
+    const formData=new Object();
+    //form의 입력요소를 object로 바꾸는 코드
+    for(let key of itemUpdate){
+        if (key.name && key.value) {
+            formData[key.name]=key.value;
+        }
+    }
+    const result=await productUpdateAjax(formData)
+    //성공하면 이페이지 새로 고침 window.loacation.reload();
+    //성공인데 0이면 (다른 곳에서 삭제) "삭제된 레코드입니다" =>리스트로 이동
+    //실패 -1 "빈 데이터를 확인하거나 통신장애입니다."
+    console.log(result);
+    alert(result.msg);
+    if(result.affectedRows>0){
+        window.location.reload();
+    }else if(result.affectedRows==0){
+        window.location.href="/item/list.do";
+    }else{ //-1일때
+        //데이터 베이스에 오류내역 저장!
+    }
+}
+async function commentListAjax(){
+    let product_num=(PRODUCT.PRODUCT_NUM);
+    let res=await fetch(COMMENT_LIST_URL+"?product_num="+product_num);
+    return res.json();
+}
+
+async function productUpdateAjax(formData){
+    let res= await fetch(UPDATE_URL,{
+        method:"post",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify(formData)
+     });
+    return await res.json();
+
+}
+
+//삭제하는 서비스 (async 객체는 무조건 promise 객체를 반환한다.)
+async function productDelAjax(id){
+   let res=await fetch(DELETE_URL+"?id="+id);
+   let result=await res.json();
+   return result;
+}
+
+const minImgNode =document.getElementById("PRODUCT_MAIN_IMG");
+const detailImgNode=document.getElementById("PRODUCT_DETAIL_IMG");
+function productPrint(){
+    cateListPrint();
+    minImgNode.src="/public/img/"+PRODUCT["MAIN_IMG"];
+    detailImgNode.src="/public/img/"+PRODUCT["DETAIL_IMG"];
+    for(let key in PRODUCT){
+        input_node=itemUpdate[key];
+        if(input_node){
+            input_node.value=PRODUCT[key];
+        }
+    }    
+}
+function cateListPrint(){
+    CATE_LIST.forEach((cate)=>{
+        const option=document.createElement("option");
+        option.value=cate["CATEGORY_NUM"];
+        option.innerText=cate["NAME"];
+        itemUpdate.CATEGORY_NUM.append(option);
+    })
+}
+productPrint();//화면 로드시 출력되기 때문에 지우지 마세요
+
+//알약 버튼 부모색 변경 구현 
+//화면이 처음 로드 될 때 체크된 것이 있으면 색 설정
+function circleBoxsChangeColor(){
+    const circle_boxs=document.querySelectorAll(".circle_btn input[type='checkbox']");
+    circle_boxs.forEach(circleBoxChangeColor);
+}
+const circleBoxChangeColor=(box)=>{
+    box.parentNode.style.backgroundColor=(box.checked)?"":"#cd5858";
+    box.addEventListener("change",(e)=>{
+        box.parentNode.style.backgroundColor=(box.checked)?"":"#cd5858";
+    });
+}
+</script>
+</script>
+</body>
+</html>

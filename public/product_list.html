@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ajax로 list를 출력하자</title>
+<style>
+body{
+    margin: 0;
+    padding: 0;
+}
+body>header{
+    padding: 1px;
+}  
+.product_list_container{
+    display: grid;
+    grid-template-columns: auto auto auto;
+}
+@media (max-width: 1600px) {
+    .product_list_container{
+        grid-template-columns: auto auto ;
+    }
+
+}
+@media (max-width: 1200px) {
+    .product_list_container{
+        grid-template-columns: auto ;
+    }
+}
+.product_list_container>li{
+    border: 1px solid;
+    list-style: none;
+    display: flex;
+    padding: 40px 20px;
+    margin: 10px;
+    height: 200px;
+}
+.product_list_container>li .MAIN_IMG{
+    height: 200px;
+}
+.item_clone{ display: none !important;}    
+main{
+    display: flex;
+}
+main>aside
+{
+    flex-basis: 200px;
+}
+main>aside iframe{
+    width: 200px;
+    height: calc(100vh - 120px);
+    border: 1px solid;
+
+}
+header{
+    height: 120px;
+}
+main>section{
+    border: 1px solid;
+}
+</style>
+</head>
+<body>
+    <header>
+        <h2>상품 전체 관리 페이지</h2>
+        <iframe src="/header/menu.do" width="100%" frameborder="0"></iframe>
+    </header>
+    <main>
+        <aside>
+            <iframe src="/item/menu.do" frameborder="0">
+            </iframe>
+        </aside>
+        <section>
+            <ul class="product_list_container" id="productList">
+                <li class="item_clone">
+                    <img class="MAIN_IMG" src="" alt="">
+                    <ul class="product">
+                        <li>상세보기: <a class="PRODUCT_NUM" href="/item/detail.do?id="></a> 이동</li>
+                        <li>이름: <span class="NAME"></span> </li>
+                        <li>타이틀: <span class="TITLE"></span> </li>
+                        <li>등록수: <span class="COUNT"></span>개 </li>
+                        <li>가격: <span class="PRICE"></span>운 </li>
+                        <li>색: <span class="COLOR"></span> </li>
+                        <li>모델번호: <span class="MODEL_NUM"></span> </li>
+                        <li>글쓴이: <span class="MEMBER_ID"></span> </li>
+                        <li>카테고리: <span class="CATEGORY"> </span></li>
+                    </ul>
+                </li>
+            </ul>
+            <iframe width="100%" id="paginationFrame" src="" frameborder="0"></iframe>
+        </section>
+    </main>
+<script>
+//const PAGE=(window.location.search.split("&")[0].split("=")[1]);//권장하지 않음
+//PRODUCT_LIST 문서 로드시 추가된 객체
+const productList=document.getElementById("productList");//아이템 리스트 컨테이너
+const item_clone=productList.querySelector(".item_clone");//복제해서 리스트 출력
+const paginationFrame=document.getElementById("paginationFrame");
+paginationFrame.src="/item/pagination.do?page="+PAGE;
+
+productListPrint();
+function productListPrint(){
+    PRODUCT_LIST.forEach((item)=>{
+        const item_node=item_clone.cloneNode(true);
+        item_node.className="";
+        //PRODUCT_NUM일때만 href 세팅
+        let href=item_node.querySelector(".PRODUCT_NUM").href;
+        item_node.querySelector(".PRODUCT_NUM").href=href+item["PRODUCT_NUM"];
+        for(let key in item){
+            if(key==="MAIN_IMG"){
+                item_node.querySelector(`.${key}`).src="/public/img/"+item[key];
+            }else{
+                const node=item_node.querySelector("."+key);
+                if(node) node.innerText=item[key];
+            }
+            productList.append(item_node);
+        }
+    });
+}    
+</script>    
+</body>
+</html>
